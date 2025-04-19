@@ -14,30 +14,29 @@ export default function Home() {
         setFilteredAdvocates(jsonResponse.data);
       });
     });
+    console.log('A-whenthishappens')
   }, []);
 
   const onChange = (e) => {
-    const searchTerm = e.target.value;
-
-    document.getElementById("search-term").innerHTML = searchTerm;
-
+    const searchTerm = e.target.value.toLowerCase();
     console.log("filtering advocates...");
-    const filteredAdvocates = advocates.filter((advocate) => {
+    const filteredAdvocatesNew = advocates.filter((advocate) => {
       return (
-        advocate.firstName.includes(searchTerm) ||
-        advocate.lastName.includes(searchTerm) ||
-        advocate.city.includes(searchTerm) ||
-        advocate.degree.includes(searchTerm) ||
-        advocate.specialties.includes(searchTerm) ||
-        advocate.yearsOfExperience.includes(searchTerm)
+        advocate?.firstName?.toLowerCase().includes(searchTerm) ||
+        advocate?.lastName?.toLowerCase().includes(searchTerm) ||
+        advocate?.city?.toLowerCase().includes(searchTerm) ||
+        advocate?.degree?.toLowerCase().includes(searchTerm)  ||
+        advocate?.specialties?.filter(specialty=>specialty.toLowerCase().includes(searchTerm)).length > 0 ||
+        advocate?.yearsOfExperience.toString()===(searchTerm) ||
+        advocate?.phoneNumber.toString()===(searchTerm)
       );
     });
-
-    setFilteredAdvocates(filteredAdvocates);
+    
+    setFilteredAdvocates(filteredAdvocatesNew);
   };
 
   const onClick = () => {
-    console.log(advocates);
+    document.getElementById("search-input").value = "";
     setFilteredAdvocates(advocates);
   };
 
@@ -51,13 +50,14 @@ export default function Home() {
         <p>
           Searching for: <span id="search-term"></span>
         </p>
-        <input style={{ border: "1px solid black" }} onChange={onChange} />
+        <input id="search-input" style={{ border: "1px solid black" }} onChange={onChange} />
         <button onClick={onClick}>Reset Search</button>
       </div>
       <br />
       <br />
-      <table>
+      <table style={{border: "1px"}}>
         <thead>
+          <tr>
           <th>First Name</th>
           <th>Last Name</th>
           <th>City</th>
@@ -65,18 +65,19 @@ export default function Home() {
           <th>Specialties</th>
           <th>Years of Experience</th>
           <th>Phone Number</th>
+          </tr>
         </thead>
         <tbody>
-          {filteredAdvocates.map((advocate) => {
+          {filteredAdvocates.map((advocate, index) => {
             return (
-              <tr>
+              <tr key={index}>
                 <td>{advocate.firstName}</td>
                 <td>{advocate.lastName}</td>
                 <td>{advocate.city}</td>
                 <td>{advocate.degree}</td>
-                <td>
-                  {advocate.specialties.map((s) => (
-                    <div>{s}</div>
+                <td> 
+                  {advocate.specialties.map((s, i) => (
+                    <div key={i + s}>{s}</div>
                   ))}
                 </td>
                 <td>{advocate.yearsOfExperience}</td>

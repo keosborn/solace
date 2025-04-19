@@ -30,9 +30,11 @@ const specialties = [
   "Domestic abuse",
 ];
 
+const totalSpecialties = specialties.length
+
 const randomSpecialty = () => {
-  const random1 = Math.floor(Math.random() * 24);
-  const random2 = Math.floor(Math.random() * (24 - random1)) + random1 + 1;
+  const random1 = Math.floor((Math.random() * totalSpecialties) - 1); //0-25
+  const random2 = Math.floor(Math.random() * (totalSpecialties - random1)) + random1 + 1;
 
   return [random1, random2];
 };
