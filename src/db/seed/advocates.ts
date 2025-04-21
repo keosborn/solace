@@ -42,7 +42,7 @@ const randomSpecialty = () => {
 const advocateData = [
   {
     id: 1,
-    firstName: "John",
+    firstName: "Johnny",
     lastName: "Doe",
     city: "New York",
     degree: "MD",

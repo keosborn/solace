@@ -131,7 +131,7 @@ export default function Home() {
                 <TableCell>{advocate.city}</TableCell>
                 <TableCell>{advocate.degree}</TableCell>
                 <TableCell> 
-                  {advocate.specialties.map((s, i) => (
+                  {advocate.specialties?.map((s, i) => (
                     <div key={i + s}>{s}</div>
                   ))}
                 </TableCell>
