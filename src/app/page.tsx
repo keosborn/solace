@@ -1,150 +1,162 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { Button, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow  } from '@mui/material';
+import { useCallback, useEffect, useState } from "react";
+import { DataGrid, GridColDef, GridFilterModel} from '@mui/x-data-grid';
+import {Box, Card, Container, Paper, Typography  } from '@mui/material';
+import CustomToolbar from "../components/CustomToolbar";
+import ChipSet from "../components/ChipSet";
+import Alert from '@mui/material/Alert';
+import ErrorIcon from '@mui/icons-material/Error';
 
 export default function Home() {
-  const [advocates, setAdvocates] = useState([]);
-  const [filteredAdvocates, setFilteredAdvocates] = useState([]);
+  // const [specialties, setSpecialties] =  useState("")
+
+  function useFetchData(url: string) {
+    const [data, setData] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+      const fetchData = async () => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+          const response = await fetch(url);
+      
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const json = (await response.json());
+
+          setData(json.data);
+
+        } catch (e: any) {
+          setError(e.message);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+  
+      fetchData();
+    }, [url]);
+
+    return { data, isLoading, error };
+  }
+ 
+  const [filteredData, setFilteredData] = useState([])
+  
+  const { data, isLoading, error } = useFetchData(`/api/advocates`);
 
   useEffect(() => {
-    console.log("fetching advocates...");
-    fetch("/api/advocates").then((response) => {
-      response.json().then((jsonResponse) => {
-        setAdvocates(jsonResponse.data);
-        setFilteredAdvocates(jsonResponse.data);
-      });
-    });
-  }, []);
+    setFilteredData(data)
+  }, [isLoading]);
 
-  const onChange = (e) => {
-    const searchTerm = e.target.value.toLowerCase();
-    console.log("filtering advocates...");
-    const filteredAdvocatesNew = advocates.filter((advocate) => {
-      return (
-        advocate?.firstName?.toLowerCase().includes(searchTerm) ||
-        advocate?.lastName?.toLowerCase().includes(searchTerm) ||
-        advocate?.city?.toLowerCase().includes(searchTerm) ||
-        advocate?.degree?.toLowerCase().includes(searchTerm)  ||
-        advocate?.specialties?.filter(specialty=>specialty.toLowerCase().includes(searchTerm)).lengTableCell > 0 ||
-        advocate?.yearsOfExperience.toString()===(searchTerm) ||
-        advocate?.phoneNumber.toString()===(searchTerm)
-      );
-    });
-    
-    setFilteredAdvocates(filteredAdvocatesNew);
-  };
+  const onSpecialtyClick = useCallback((event:any) => {
+    const selectedSpecialty = event.currentTarget.id
+    const results = selectedSpecialty ? 
+    data
+      .filter(itm=>itm.specialties
+      .includes(selectedSpecialty))
+      : data
+    setFilteredData(results)
 
-  const onClick = () => {
-    document.getElementById("search-input").value = "";
-    setFilteredAdvocates(advocates);
-  };
+}, [setFilteredData, data]);
 
-  const paginationModel = { page: 0, pageSize: 25 };
+  const paginationModel = { page: 0, pageSize: 100 };
 
   const columns: GridColDef[] = [
-    { field: 'firstName', headerName: 'First name', width: 130 },
-    { field: 'lastName', headerName: 'Last name', width: 130 },
+    { field: 'firstName', 
+      headerName: 'First name', 
+      width: 120
+    },
+    { field: 'lastName', 
+      headerName: 'Last name', 
+      width: 120 
+    },
     {
       field: 'city',
       headerName: 'City',
-      width: 90,
+      width: 130,
     },    
     {
       field: 'degree',
       headerName: 'Degree',
-      width: 90,
-    },    
-    {
-      field: 'specialties',
-      headerName: 'Specialties',
-      width: 90,
-      sortable: false
-    },
+      width: 60,
+    },   
     {
       field: 'yearsOfExperience',
       headerName: 'Years of Experience',
       type: 'number',
-      width: 160,
+      width: 60,
     },
     {
       field: 'phoneNumber',
       headerName: 'Phone Number',
       type: 'number',
-      width: 140,
+      width: 110,
+    },
+    {
+      field: 'specialties',
+      headerName: 'Specialties',
+      sortable: false,
+      minWidth: 200,
+      flex: 3,
     }
   ];
 
-
   return (
-  <>
-    <Container maxWidTableCell="sm">
-    <main style={{ margin: "24px" }}>
-      <h1>Solace Advocates</h1>
-      <br />
-      <br />
-      <div>
-        <p>Search</p>
-        <p>
-          Searching for: <span id="search-term"></span>
-        </p>
-        <input id="search-input" style={{ border: "1px solid black" }} onChange={onChange} />
+    <Container sx={{backgroundColor: "#3f937c0d", padding: "20px" }}>
+      <Paper>
+        <Box sx={{marginTop: '20px', padding: 2}}>
+          <Card variant="outlined" sx={{margin: 2, padding: 2}}>
+            <>
+              <Typography sx={{fontFamily: 'freight-big-pro'}} variant = 'h3'>Solace Advocates</Typography>
+              <Typography sx={{color:"grey"}} variant = "body1" >Use this tool to search advocates by name, city, degree, specialty and more.</Typography>
+            </>
+          </Card>
+        </Box>
+  
+        {error && 
+        <Alert style={{marginBottom: '40px'}} icon={<ErrorIcon fontSize="inherit" />} severity="error">
+          Error: {error}
+        </Alert>}
 
-        <Button variant="contained" onClick={onClick}>Reset Search</Button>;
-        <button onClick={onClick}>Reset Search</button>
-      </div>
-      <br />
-      <br />
-
-
-      {/* <Paper sx={{ height: 400, width: '100%' }}> */}
-      <DataGrid
-          rows={filteredAdvocates}
-          columns={columns}
-          initialState={{ pagination: { paginationModel } }}
-          pageSizeOptions={[5, 10]}
-          //checkboxSelection
-          sx={{ border: 0 }}
-        />
-      {/* </Paper> */}
-
-
-      <Table>
-        <TableHead >
-          <TableRow >
-          <TableCell>First Name</TableCell>
-          <TableCell>Last Name</TableCell>
-          <TableCell>City</TableCell>
-          <TableCell>Degree</TableCell>
-          <TableCell>Specialties</TableCell>
-          <TableCell>Years of Experience</TableCell>
-          <TableCell>Phone Number</TableCell>
-          </TableRow >
-        </TableHead >
-        <TableBody >
-          {filteredAdvocates.map((advocate, index) => {
-            return (
-              <TableRow key={index}>
-                <TableCell>{advocate.firstName}</TableCell>
-                <TableCell>{advocate.lastName}</TableCell>
-                <TableCell>{advocate.city}</TableCell>
-                <TableCell>{advocate.degree}</TableCell>
-                <TableCell> 
-                  {advocate.specialties?.map((s, i) => (
-                    <div key={i + s}>{s}</div>
-                  ))}
-                </TableCell>
-                <TableCell>{advocate.yearsOfExperience}</TableCell>
-                <TableCell>{advocate.phoneNumber}</TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody >
-      </Table>
-    </main>
+        {!isLoading && 
+        <>
+        <ChipSet onSpecialtyClick={onSpecialtyClick}/>
+        
+        <DataGrid
+            getEstimatedRowHeight={() => 100}
+            getRowHeight={() => 'auto'} 
+            rows = {adaptData(filteredData)}
+            loading={isLoading}
+            columns={columns}
+            sx={{ border: 0, width: "100%", padding: 2 }}
+            initialState={{
+              pagination: { paginationModel },
+              filter: {
+                filterModel: {
+                  items: [],
+                },
+              },
+            }}
+            slots={{ toolbar: CustomToolbar }}
+            showToolbar
+          />
+          </>}
+        
+      </Paper>
     </Container>
-
-    </>
   );
 }
+
+const formatPhone = (phone: string) => {
+  const number = `${phone.substring(0,3)}-${phone.substring(4,6)}-${phone.substring(7,11)}`
+  return number
+};
+
+function adaptData(advocates: any[]){
+  const adaptedData = advocates.map(itm=>({...itm, specialties: itm.specialties.sort(), phoneNumber: formatPhone(itm.phoneNumber.toString())}))
+  return adaptedData
+};

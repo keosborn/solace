@@ -1,7 +1,7 @@
 import db from "..";
 import { advocates } from "../schema";
 
-const specialties = [
+export const specialties = [
   "Bipolar",
   "LGBTQ",
   "Medication/Prescribing",
@@ -42,7 +42,7 @@ const randomSpecialty = () => {
 const advocateData = [
   {
     id: 1,
-    firstName: "Johnny",
+    firstName: "John",
     lastName: "Doe",
     city: "New York",
     degree: "MD",
