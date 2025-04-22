@@ -9,8 +9,6 @@ import Alert from '@mui/material/Alert';
 import ErrorIcon from '@mui/icons-material/Error';
 
 export default function Home() {
-  // const [specialties, setSpecialties] =  useState("")
-
   function useFetchData(url: string) {
     const [data, setData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
